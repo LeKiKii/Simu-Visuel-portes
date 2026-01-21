@@ -12,9 +12,9 @@ function App() {
     <div className="flex h-screen bg-gray-50 font-sans">
       {/* Sidebar */}
       <div className="w-64 flex-shrink-0 bg-white shadow-md z-10 flex flex-col">
-        <div className="h-16 flex items-center px-6 border-b border-gray-200 bg-blue-600 text-white">
+        <div className="h-16 flex items-center px-6 border-b border-gray-200 bg-orange-600 text-white">
           <Layers className="w-6 h-6 mr-3" />
-          <h1 className="font-bold text-lg">Menuiserie Viz</h1>
+          <h1 className="font-bold text-lg">Simulateur Portes</h1>
         </div>
         
         {/* Door Selector - Only active if background is loaded (optional restriction, but keeps UI clean) */}
