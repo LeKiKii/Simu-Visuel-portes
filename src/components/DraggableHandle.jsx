@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export default function DraggableHandle({ x, y, onDrag, color = 'blue' }) {
+export default function DraggableHandle({ x, y, onDrag, onDragStart, onDragEnd, color = 'blue' }) {
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
@@ -11,6 +11,7 @@ export default function DraggableHandle({ x, y, onDrag, color = 'blue' }) {
 
     const handlePointerUp = () => {
       setIsDragging(false);
+      if (onDragEnd) onDragEnd();
     };
 
     if (isDragging) {
@@ -22,13 +23,14 @@ export default function DraggableHandle({ x, y, onDrag, color = 'blue' }) {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [isDragging, onDrag]);
+  }, [isDragging, onDrag, onDragEnd]);
 
   return (
     <div
       onPointerDown={(e) => {
         e.stopPropagation(); // Prevent triggering parent drag events if any
         setIsDragging(true);
+        if (onDragStart) onDragStart();
       }}
       style={{
         left: x,

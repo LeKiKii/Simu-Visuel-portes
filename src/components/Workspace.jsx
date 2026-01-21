@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DraggableHandle from './DraggableHandle';
+import Magnifier from './Magnifier';
 import { getPerspectiveTransform } from '../utils/math';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -16,6 +17,8 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
   const [doorDimensions, setDoorDimensions] = useState({ w: 0, h: 0 });
   const [transformStyle, setTransformStyle] = useState('');
   const [showControls, setShowControls] = useState(true);
+  const [activeHandle, setActiveHandle] = useState(null);
+  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
   
   // State for dragging the whole shape
   const [isDraggingShape, setIsDraggingShape] = useState(false);
@@ -103,6 +106,20 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
       newPoints[index] = { x, y };
       return newPoints;
     });
+  };
+
+  const handleDragStart = (index) => {
+    setActiveHandle(index);
+    if (containerRef.current) {
+      setContainerSize({
+        w: containerRef.current.offsetWidth,
+        h: containerRef.current.offsetHeight
+      });
+    }
+  };
+
+  const handleDragEnd = () => {
+    setActiveHandle(null);
   };
 
   const handleShapeDown = (e) => {
@@ -194,8 +211,21 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
                   x={p.x}
                   y={p.y}
                   onDrag={(e) => handleDrag(i, e)}
+                  onDragStart={() => handleDragStart(i)}
+                  onDragEnd={handleDragEnd}
                 />
               ))}
+
+              {/* Magnifier for precision */}
+              {activeHandle !== null && (
+                <Magnifier
+                  x={points[activeHandle].x}
+                  y={points[activeHandle].y}
+                  imgUrl={backgroundUrl}
+                  containerWidth={containerSize.w}
+                  containerHeight={containerSize.h}
+                />
+              )}
             </>
           )}
         </div>
