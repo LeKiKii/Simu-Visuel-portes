@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import DraggableHandle from './DraggableHandle';
 import Magnifier from './Magnifier';
 import { getPerspectiveTransform } from '../utils/math';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 const DEFAULT_POINTS = [
   { x: 100, y: 100 }, // TL
@@ -128,18 +129,50 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
     setLastMousePos({ x: e.clientX, y: e.clientY });
   };
 
+  const handleExport = async () => {
+    if (!containerRef.current) return;
+
+    try {
+      const canvas = await html2canvas(containerRef.current, {
+        useCORS: true,
+        backgroundColor: null,
+      });
+
+      const link = document.createElement('a');
+      link.download = 'simulation_porte.png';
+      link.href = canvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Export failed", err);
+      alert("Erreur lors de l'export de l'image");
+    }
+  };
+
   return (
     <div className="flex-1 bg-gray-100 relative overflow-hidden flex items-center justify-center">
-      {/* Control Toggle */}
+      {/* Control Toggle & Export */}
       {backgroundUrl && doorUrl && (
-        <button
-          onClick={() => setShowControls(!showControls)}
-          className="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-white text-gray-700 transition-all flex items-center gap-2"
-          title={showControls ? "Masquer les contrôles" : "Afficher les contrôles"}
-        >
-          {showControls ? <EyeOff size={20} /> : <Eye size={20} />}
-          <span className="text-sm font-medium">{showControls ? "Masquer" : "Afficher"}</span>
-        </button>
+        <div className="absolute top-4 right-4 z-50 flex gap-2" data-html2canvas-ignore="true">
+          <button
+            onClick={handleExport}
+            className="bg-blue-600/90 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-blue-600 text-white transition-all flex items-center gap-2"
+            title="Exporter l'image"
+          >
+            <Download size={20} />
+            <span className="text-sm font-medium">Exporter</span>
+          </button>
+
+          <button
+            onClick={() => setShowControls(!showControls)}
+            className="bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-white text-gray-700 transition-all flex items-center gap-2"
+            title={showControls ? "Masquer les contrôles" : "Afficher les contrôles"}
+          >
+            {showControls ? <EyeOff size={20} /> : <Eye size={20} />}
+            <span className="text-sm font-medium">{showControls ? "Masquer" : "Afficher"}</span>
+          </button>
+        </div>
       )}
 
       {/* Container for the workspace */}
@@ -192,6 +225,7 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
                 <svg
                   className="absolute top-0 left-0 w-full h-full pointer-events-none z-40"
                   style={{ overflow: 'visible' }}
+                  data-html2canvas-ignore="true"
                 >
                   <polygon
                     points={points.map(p => `${p.x},${p.y}`).join(' ')}
@@ -205,16 +239,20 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
               )}
 
               {/* Handles */}
-              {showControls && points.map((p, i) => (
-                <DraggableHandle
-                  key={i}
-                  x={p.x}
-                  y={p.y}
-                  onDrag={(e) => handleDrag(i, e)}
-                  onDragStart={() => handleDragStart(i)}
-                  onDragEnd={handleDragEnd}
-                />
-              ))}
+              {showControls && (
+                <div data-html2canvas-ignore="true">
+                  {points.map((p, i) => (
+                    <DraggableHandle
+                      key={i}
+                      x={p.x}
+                      y={p.y}
+                      onDrag={(e) => handleDrag(i, e)}
+                      onDragStart={() => handleDragStart(i)}
+                      onDragEnd={handleDragEnd}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Magnifier for precision */}
               {activeHandle !== null && (
