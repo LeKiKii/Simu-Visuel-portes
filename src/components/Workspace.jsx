@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DraggableHandle from './DraggableHandle';
 import { getPerspectiveTransform } from '../utils/math';
+import { Eye, EyeOff } from 'lucide-react';
 
 const DEFAULT_POINTS = [
   { x: 100, y: 100 }, // TL
@@ -14,6 +15,7 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
   const [points, setPoints] = useState(DEFAULT_POINTS);
   const [doorDimensions, setDoorDimensions] = useState({ w: 0, h: 0 });
   const [transformStyle, setTransformStyle] = useState('');
+  const [showControls, setShowControls] = useState(true);
   
   // State for dragging the whole shape
   const [isDraggingShape, setIsDraggingShape] = useState(false);
@@ -111,6 +113,18 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
 
   return (
     <div className="flex-1 bg-gray-100 relative overflow-hidden flex items-center justify-center">
+      {/* Control Toggle */}
+      {backgroundUrl && doorUrl && (
+        <button
+          onClick={() => setShowControls(!showControls)}
+          className="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-white text-gray-700 transition-all flex items-center gap-2"
+          title={showControls ? "Masquer les contrôles" : "Afficher les contrôles"}
+        >
+          {showControls ? <EyeOff size={20} /> : <Eye size={20} />}
+          <span className="text-sm font-medium">{showControls ? "Masquer" : "Afficher"}</span>
+        </button>
+      )}
+
       {/* Container for the workspace */}
       {backgroundUrl ? (
         <div 
@@ -157,22 +171,24 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
               />
               
               {/* Drag Area Overlay */}
-              <svg 
-                className="absolute top-0 left-0 w-full h-full pointer-events-none z-40" 
-                style={{ overflow: 'visible' }}
-              >
-                <polygon 
-                  points={points.map(p => `${p.x},${p.y}`).join(' ')}
-                  fill="rgba(59, 130, 246, 0.1)" 
-                  stroke="rgba(59, 130, 246, 0.5)"
-                  strokeWidth="2"
-                  className="cursor-move pointer-events-auto hover:fill-blue-500/20 transition-colors"
-                  onPointerDown={handleShapeDown}
-                />
-              </svg>
+              {showControls && (
+                <svg
+                  className="absolute top-0 left-0 w-full h-full pointer-events-none z-40"
+                  style={{ overflow: 'visible' }}
+                >
+                  <polygon
+                    points={points.map(p => `${p.x},${p.y}`).join(' ')}
+                    fill="rgba(59, 130, 246, 0.1)"
+                    stroke="rgba(59, 130, 246, 0.5)"
+                    strokeWidth="2"
+                    className="cursor-move pointer-events-auto hover:fill-blue-500/20 transition-colors"
+                    onPointerDown={handleShapeDown}
+                  />
+                </svg>
+              )}
 
               {/* Handles */}
-              {points.map((p, i) => (
+              {showControls && points.map((p, i) => (
                 <DraggableHandle
                   key={i}
                   x={p.x}
