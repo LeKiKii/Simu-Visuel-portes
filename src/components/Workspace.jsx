@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import DraggableHandle from './DraggableHandle';
 import Magnifier from './Magnifier';
 import { getPerspectiveTransform } from '../utils/math';
@@ -16,7 +16,6 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
   const containerRef = useRef(null);
   const [points, setPoints] = useState(DEFAULT_POINTS);
   const [doorDimensions, setDoorDimensions] = useState({ w: 0, h: 0 });
-  const [transformStyle, setTransformStyle] = useState('');
   const [showControls, setShowControls] = useState(true);
   const [activeHandle, setActiveHandle] = useState(null);
   const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
@@ -25,28 +24,14 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
   const [isDraggingShape, setIsDraggingShape] = useState(false);
   const [lastMousePos, setLastMousePos] = useState(null);
 
-  // Reset points when a new door is selected
-  useEffect(() => {
-    if (doorUrl) {
-      // We start with a default rectangle centered-ish
-      // Ideally we center it in the view, but fixed is fine for MVP
-      setPoints([
-        { x: 150, y: 150 },
-        { x: 350, y: 150 },
-        { x: 350, y: 550 },
-        { x: 150, y: 550 },
-      ]);
-    }
-  }, [doorUrl]);
-
   const handleDoorLoad = (e) => {
     const { naturalWidth, naturalHeight } = e.target;
     setDoorDimensions({ w: naturalWidth, h: naturalHeight });
   };
 
-  // Recalculate transform whenever points or dimensions change
-  useEffect(() => {
-    if (doorDimensions.w === 0 || doorDimensions.h === 0) return;
+  // Calculate transform directly during render
+  const transformStyle = useMemo(() => {
+    if (doorDimensions.w === 0 || doorDimensions.h === 0) return '';
 
     // Source points: The corners of the original image (0,0) to (w,h)
     const src = [
@@ -60,10 +45,10 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
     const dst = points.map(p => [p.x, p.y]);
 
     try {
-      const matrix = getPerspectiveTransform(src, dst);
-      setTransformStyle(matrix);
+      return getPerspectiveTransform(src, dst);
     } catch (err) {
       console.error("Matrix calculation failed", err);
+      return '';
     }
   }, [points, doorDimensions]);
 

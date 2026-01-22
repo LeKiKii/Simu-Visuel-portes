@@ -44,6 +44,7 @@ function App() {
       <div className="flex-1 flex flex-col relative">
         {backgroundUrl ? (
           <Workspace 
+            key={selectedDoor ? selectedDoor.id : 'no-door'}
             backgroundUrl={backgroundUrl} 
             doorUrl={selectedDoor?.src} 
           />
