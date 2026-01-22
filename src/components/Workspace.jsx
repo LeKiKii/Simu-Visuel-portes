@@ -121,6 +121,8 @@ export default function Workspace({ backgroundUrl, doorUrl }) {
       const canvas = await html2canvas(containerRef.current, {
         useCORS: true,
         backgroundColor: null,
+        scrollX: 0,
+        scrollY: 0,
       });
 
       const link = document.createElement('a');
